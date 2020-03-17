@@ -214,20 +214,32 @@ export class STPointsByCriteria implements CannedStatement {
     clusterIds: string[];
     locationIds: string[];
     operationNames: string[];
+    roleTypes: string[];
 
-    constructor(clusterIds: string[], locationIds: string[], operationNames: string[]) {
+    constructor(
+        clusterIds: string[],
+        locationIds: string[],
+        operationNames: string[],
+        roleTypes: string[]
+    ) {
         this.clusterIds = clusterIds;
         this.locationIds = locationIds;
         this.operationNames = operationNames;
+        this.roleTypes = roleTypes;
     }
 
     getCypher(): string {
         const result = `
             MATCH (s:Sortie)
-            OPTIONAL MATCH (s)-[:HAS_PLANE_SORTIE]->(:PlaneSortie)<-[:HAS_ROLE {type: 'pilot'}]-(pc1:PersonCluster)
-            OPTIONAL MATCH (s)<-[:HAS_ROLE {type: 'pilot'}]-(pc2:PersonCluster)
-            WITH COALESCE(pc1, pc2) AS pc, s AS s
-            WHERE size({clusterIds}) = 0 OR pc.id IN {clusterIds}
+            OPTIONAL MATCH (s)-[:HAS_PLANE_SORTIE]->(:PlaneSortie)<-[r1:HAS_ROLE]-(pc1:PersonCluster)
+            OPTIONAL MATCH (s)<-[r2:HAS_ROLE]-(pc2:PersonCluster)
+                        WHERE 
+                            ({roleTypes} = [] OR r1.type IN {roleTypes})
+                            OR
+                            ({roleTypes} = [] OR r2.type IN {roleTypes})
+            WITH DISTINCT s AS s, COALESCE(pc1, pc2) AS pc
+            MATCH (pc:PersonCluster)    // pc can be null so remove it from the stream if so
+            WHERE {clusterIds} = [] OR pc.id IN {clusterIds}
             MATCH (s)<-[:HAS_SORTIE]-(o:Operation), (s)-[:HAS_LANDING_ZONE]->(l:Location)
             WHERE 
                 ({operationNames} = [] OR o.name IN {operationNames})
@@ -242,7 +254,8 @@ export class STPointsByCriteria implements CannedStatement {
         return {
             clusterIds: this.clusterIds,
             locationIds: this.locationIds,
-            operationNames: this.operationNames
+            operationNames: this.operationNames,
+            roleTypes: this.roleTypes
         }
     }
 }

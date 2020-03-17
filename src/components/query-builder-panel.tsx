@@ -172,7 +172,8 @@ function QueryBuilderPanelFactory(
                 const query = new STPointsByCriteria(
                     this.state.selectedPilots,
                     this.state.selectedLocations,
-                    this.state.selectedOperations
+                    this.state.selectedOperations,
+                    this.state.selectedRoleTypes
                 );
 
                 singletons.gateway.search(query).then(r => {
@@ -247,8 +248,8 @@ function QueryBuilderPanelFactory(
                     addFilter: visStateActions.addFilter,
                     removeFilter: visStateActions.removeFilter,
                     setFilter: visStateActions.setFilter,
-//                    showDatasetTable: this._showDatasetTable,
-//                    showAddDataModal: this._showAddDataModal,
+                    //                    showDatasetTable: this._showDatasetTable,
+                    //                    showAddDataModal: this._showAddDataModal,
                     toggleAnimation: visStateActions.toggleFilterAnimation,
                     enlargeFilter: visStateActions.enlargeFilter
                 };
@@ -271,7 +272,10 @@ function QueryBuilderPanelFactory(
 
                 const hadDataset = Object.keys(datasets).length;
 
-                const roleTypes = ['pilot', 'organizer'];
+                const roleTypes = [
+                    'passenger_out', 'passenger_back', 'pilot', 'reception',
+                    'organizer', 'crew', 'crew_hudson'
+                ];
 
                 return (
                     <div>
