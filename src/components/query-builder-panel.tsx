@@ -87,6 +87,7 @@ interface AppState {
     selectedPilots: string[];
     selectedLocations: string[];
     selectedOperations: string[];
+    selectedRoleTypes: string[];
     availablePilots: PilotIndex;
     availableLocations: LocationIndex;
     availableOperations: OperationIndex;
@@ -141,7 +142,8 @@ function QueryBuilderPanelFactory(
                     availableLocations: {},
                     selectedLocations: [],
                     availableOperations: {},
-                    selectedOperations: []
+                    selectedOperations: [],
+                    selectedRoleTypes: []
                 }
             }
 
@@ -198,87 +200,6 @@ function QueryBuilderPanelFactory(
                     this.props.addDataToMap(kdata);
                 });
             }
-
-            doPilotQuery() {
-                const wantedClusters = this.state.selectedPilots;
-
-                singletons.gateway.search(new STPointsByMultiplePilotClusters(wantedClusters)).then(r => {
-                    console.log("record count is ", r.records.length);
-                    const count = r.records.length;
-                    if (count === 0) {
-                        notification.error({
-                            message: 'Error',
-                            description: 'No STPoints found.'
-                        });
-                    }
-                    const newRows = r.records.map(x => {
-                        return [
-                            x.get('nightOf'),
-                            TANGMERE_LONGITUDE,
-                            TANGMERE_LATITUDE,
-                            x.get('longitude'),
-                            x.get('latitude')
-                        ];
-                    });
-                    console.log("row values are %o", newRows);
-                    const kdata = makeKeplerData(newRows);
-                    this.props.addDataToMap(kdata);
-                });
-            }
-
-            doLocationQuery() {
-                const wantedLocations = this.state.selectedLocations;
-
-                singletons.gateway.search(new STPointsByLocations(wantedLocations)).then(r => {
-                    console.log("record count is ", r.records.length);
-                    const count = r.records.length;
-                    if (count === 0) {
-                        notification.error({
-                            message: 'Error',
-                            description: 'No STPoints found.'
-                        });
-                    }
-                    const newRows = r.records.map(x => {
-                        return [
-                            x.get('nightOf'),
-                            TANGMERE_LONGITUDE,
-                            TANGMERE_LATITUDE,
-                            x.get('longitude'),
-                            x.get('latitude')
-                        ];
-                    });
-                    console.log("row values are %o", newRows);
-                    const kdata = makeKeplerData(newRows);
-                    this.props.addDataToMap(kdata);
-                });
-            }
-
-            doOperationQuery() {
-                const wantedOperations = this.state.selectedOperations;
-
-                singletons.gateway.search(new STPointsByOperations(wantedOperations)).then(r => {
-                    console.log("record count is ", r.records.length);
-                    const count = r.records.length;
-                    if (count === 0) {
-                        notification.error({
-                            message: 'Error',
-                            description: 'No STPoints found.'
-                        });
-                    }
-                    const newRows = r.records.map(x => {
-                        return [
-                            x.get('nightOf'),
-                            TANGMERE_LONGITUDE,
-                            TANGMERE_LATITUDE,
-                            x.get('longitude'),
-                            x.get('latitude')
-                        ];
-                    });
-                    console.log("row values are %o", newRows);
-                    const kdata = makeKeplerData(newRows);
-                    this.props.addDataToMap(kdata);
-                });
-            }
             
             onSelectPilot(newItems: any) {
                 console.log("new items are: %o", newItems);
@@ -315,6 +236,10 @@ function QueryBuilderPanelFactory(
                 });
             }
 
+            onSelectRoleType(newRoleTypes: string[]) {
+                this.setState({selectedRoleTypes: newRoleTypes});
+            }
+
             render() {
                 const { visStateActions, datasets, filters } = this.props;
 
@@ -346,6 +271,8 @@ function QueryBuilderPanelFactory(
 
                 const hadDataset = Object.keys(datasets).length;
 
+                const roleTypes = ['pilot', 'organizer'];
+
                 return (
                     <div>
                       <Sidebar width={300}
@@ -359,6 +286,12 @@ function QueryBuilderPanelFactory(
                         {hadDataset && <FilterManager {...filterManagerActions}
                                                       datasets={datasets}
                                                       filters={filters} />}
+
+
+                        <ItemSelector options={roleTypes}
+                                      selectedItems={this.state.selectedRoleTypes}
+                                      onChange={this.onSelectRoleType.bind(this)}>
+                        </ItemSelector>
 
                         <SidePanelSection>
                           <PanelLabel>Select Pilots</PanelLabel>
