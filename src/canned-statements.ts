@@ -232,12 +232,12 @@ export class STPointsByCriteria implements CannedStatement {
         const result = `
             MATCH (s:Sortie)
             OPTIONAL MATCH (s)-[:HAS_PLANE_SORTIE]->(:PlaneSortie)<-[r1:HAS_ROLE]-(pc1:PersonCluster)
+            WHERE r1.type IN {roleTypes}
             OPTIONAL MATCH (s)<-[r2:HAS_ROLE]-(pc2:PersonCluster)
-                        WHERE 
-                            ({roleTypes} = [] OR r1.type IN {roleTypes})
-                            OR
-                            ({roleTypes} = [] OR r2.type IN {roleTypes})
-            WITH DISTINCT s AS s, COALESCE(pc1, pc2) AS pc
+            WHERE r2.type IN {roleTypes}
+            WITH s AS s, COALESCE(pc1, pc2) AS pc
+            WHERE r1 IS NOT NULL OR r2 IS NOT NULL
+
             MATCH (pc:PersonCluster)    // pc can be null so remove it from the stream if so
             WHERE {clusterIds} = [] OR pc.id IN {clusterIds}
             MATCH (s)<-[:HAS_SORTIE]-(o:Operation), (s)-[:HAS_LANDING_ZONE]->(l:Location)
