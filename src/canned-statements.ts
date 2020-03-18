@@ -236,10 +236,9 @@ export class STPointsByCriteria implements CannedStatement {
             OPTIONAL MATCH (s)<-[r2:HAS_ROLE]-(pc2:PersonCluster)
             WHERE r2.type IN {roleTypes}
             WITH s AS s, COALESCE(pc1, pc2) AS pc
-            WHERE r1 IS NOT NULL OR r2 IS NOT NULL
-
-            MATCH (pc:PersonCluster)    // pc can be null so remove it from the stream if so
-            WHERE {clusterIds} = [] OR pc.id IN {clusterIds}
+            WHERE ({roleTypes} = [] OR r1 IS NOT NULL OR r2 IS NOT NULL)
+                  AND
+                  ({clusterIds} = [] OR pc.id IN {clusterIds})
             MATCH (s)<-[:HAS_SORTIE]-(o:Operation), (s)-[:HAS_LANDING_ZONE]->(l:Location)
             WHERE 
                 ({operationNames} = [] OR o.name IN {operationNames})

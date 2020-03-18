@@ -292,10 +292,13 @@ function QueryBuilderPanelFactory(
                                                       filters={filters} />}
 
 
-                        <ItemSelector options={roleTypes}
-                                      selectedItems={this.state.selectedRoleTypes}
-                                      onChange={this.onSelectRoleType.bind(this)}>
-                        </ItemSelector>
+                        <SidePanelSection>
+                          <PanelLabel>Require Role Types</PanelLabel>
+                          <ItemSelector options={roleTypes}
+                                        selectedItems={this.state.selectedRoleTypes}
+                                        onChange={this.onSelectRoleType.bind(this)}>
+                          </ItemSelector>
+                        </SidePanelSection>
 
                         <SidePanelSection>
                           <PanelLabel>Select Pilots</PanelLabel>
